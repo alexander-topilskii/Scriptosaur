@@ -6,25 +6,40 @@ import { Chat } from '@google/genai';
 interface ScriptGeneratorProps {
   chat: Chat;
   structure: string;
+  style: string;
   onScriptComplete: (fullScript: string) => void;
 }
 
-const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, onScriptComplete }) => {
+const STORAGE_KEY = 'prompt_generation_instruction';
+
+const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, style, onScriptComplete }) => {
   const [scriptParts, setScriptParts] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [customInstruction, setCustomInstruction] = useState('');
-
-  // Extract blocks (simplistic approach - splitting by newlines isn't great, so we rely on user guidance)
-  // Or better, we just tell AI "Write next block"
   
+  // Prompt State
+  const [baseInstruction, setBaseInstruction] = useState(() => 
+    localStorage.getItem(STORAGE_KEY) || PROMPTS.GENERATION_INSTRUCTION
+  );
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  const handlePromptChange = (val: string) => {
+    setBaseInstruction(val);
+    localStorage.setItem(STORAGE_KEY, val);
+  };
+
   const handleGenerateNext = async () => {
     setLoading(true);
     try {
-      const instruction = customInstruction.trim() 
-        ? customInstruction 
-        : `${PROMPTS.GENERATION_INSTRUCTION}\nПродолжай строго по утвержденному плану. Напиши следующий логический блок/эпизод. Не пиши весь сценарий сразу, только один блок.`;
+      // Reinforce style in every request to prevent drift
+      const styleReminder = `\n\nВАЖНОЕ НАПОМИНАНИЕ О СТИЛЕ:\nПиши СТРОГО в следующем стиле:\n${style}`;
       
-      const result = await generateScriptSection(chat, instruction);
+      // Combine the edited base instruction with any user-typed custom instruction
+      const combinedInstruction = customInstruction.trim() 
+        ? `${baseInstruction}\n\nДОПОЛНИТЕЛЬНАЯ ИНСТРУКЦИЯ ОТ ПОЛЬЗОВАТЕЛЯ:\n${customInstruction}${styleReminder}` 
+        : `${baseInstruction}\nПродолжай строго по утвержденному плану. Напиши следующий логический блок/эпизод. Не пиши весь сценарий сразу, только один блок.${styleReminder}`;
+      
+      const result = await generateScriptSection(chat, combinedInstruction);
       setScriptParts(prev => [...prev, result]);
       setCustomInstruction('');
     } catch (error) {
@@ -50,7 +65,30 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, onSc
       {/* Right: Generation Area */}
       <div className="lg:w-2/3 flex flex-col gap-4">
         <div className="flex-1 bg-gray-850 p-4 rounded-lg border border-gray-700 flex flex-col overflow-hidden">
-          <h3 className="text-md font-bold text-indigo-300 mb-2">Сценарий</h3>
+          <div className="flex justify-between items-center mb-2">
+             <h3 className="text-md font-bold text-indigo-300">Сценарий</h3>
+             <button 
+                onClick={() => setShowPrompt(!showPrompt)}
+                className="text-xs flex items-center gap-1 text-gray-500 hover:text-indigo-400 transition-colors"
+            >
+                {showPrompt ? 'Скрыть конфиг' : '⚙️ Конфиг генерации'}
+            </button>
+          </div>
+
+          {showPrompt && (
+              <div className="mb-4 p-3 bg-gray-900 rounded border border-gray-700 border-l-4 border-l-indigo-500 shrink-0">
+                  <label className="text-xs font-bold text-indigo-400 uppercase tracking-wider block mb-1">Базовая инструкция (применяется к каждому блоку)</label>
+                  <textarea 
+                    value={baseInstruction}
+                    onChange={(e) => handlePromptChange(e.target.value)}
+                    className="w-full h-24 bg-gray-950 text-gray-300 text-xs font-mono p-2 rounded border border-gray-800 focus:border-indigo-500 outline-none"
+                  />
+                  <div className="mt-2 text-xs text-gray-500">
+                    * Стиль автора автоматически добавляется к каждому запросу.
+                  </div>
+              </div>
+          )}
+
           <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {scriptParts.length === 0 && (
               <div className="text-gray-500 italic text-center mt-20">
@@ -76,7 +114,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, onSc
             <div className="flex gap-2">
                 <input 
                     type="text" 
-                    placeholder="Доп. инструкция (опционально): 'Пиши про пункт 2', 'Добавь шутку'..."
+                    placeholder="Доп. инструкция для ЭТОГО блока (опционально)..."
                     className="flex-1 bg-gray-950 border border-gray-700 rounded px-3 py-2 text-sm text-white"
                     value={customInstruction}
                     onChange={(e) => setCustomInstruction(e.target.value)}

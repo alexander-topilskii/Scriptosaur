@@ -1,23 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateStyleAnalysis } from '../services/geminiService';
 import { PROMPTS } from '../constants';
 
 interface StyleAnalyzerProps {
-  apiKey: string;
   model: string;
   onStyleConfirmed: (name: string, style: string) => void;
 }
 
-const StyleAnalyzer: React.FC<StyleAnalyzerProps> = ({ apiKey, model, onStyleConfirmed }) => {
+const STORAGE_KEY = 'prompt_style_analysis';
+
+const StyleAnalyzer: React.FC<StyleAnalyzerProps> = ({ model, onStyleConfirmed }) => {
   const [name, setName] = useState('');
   const [analysis, setAnalysis] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Prompt State
+  const [systemPrompt, setSystemPrompt] = useState(() => 
+    localStorage.getItem(STORAGE_KEY) || PROMPTS.STYLE_ANALYSIS_SYSTEM
+  );
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  const handlePromptChange = (val: string) => {
+    setSystemPrompt(val);
+    localStorage.setItem(STORAGE_KEY, val);
+  };
+
+  const resetPrompt = () => {
+    setSystemPrompt(PROMPTS.STYLE_ANALYSIS_SYSTEM);
+    localStorage.setItem(STORAGE_KEY, PROMPTS.STYLE_ANALYSIS_SYSTEM);
+  };
 
   const handleAnalyze = async () => {
     if (!name.trim()) return;
     setLoading(true);
     try {
-      const result = await generateStyleAnalysis(apiKey, model, name, PROMPTS.STYLE_ANALYSIS_SYSTEM);
+      const result = await generateStyleAnalysis(model, name, systemPrompt);
       setAnalysis(result);
     } catch (error) {
       console.error(error);
@@ -30,10 +47,34 @@ const StyleAnalyzer: React.FC<StyleAnalyzerProps> = ({ apiKey, model, onStyleCon
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="bg-gray-850 p-6 rounded-lg border border-gray-700">
-        <h2 className="text-xl font-bold mb-4 text-white">1. Анализ Стиля</h2>
-        <p className="text-gray-400 mb-4 text-sm">
-          Введите имя блогера или название канала. AI создаст подробный промпт описывающий его стиль.
-        </p>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-white">1. Анализ Стиля</h2>
+            <p className="text-gray-400 text-sm mt-1">
+              Введите имя блогера или название канала. AI создаст подробный промпт описывающий его стиль.
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowPrompt(!showPrompt)}
+            className="text-xs flex items-center gap-1 text-gray-500 hover:text-indigo-400 transition-colors"
+          >
+            {showPrompt ? 'Скрыть промпт' : '⚙️ Настроить промпт'}
+          </button>
+        </div>
+
+        {showPrompt && (
+          <div className="mb-6 p-4 bg-gray-900 rounded border border-gray-700 border-l-4 border-l-indigo-500">
+             <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Системный Промт для AI</label>
+                <button onClick={resetPrompt} className="text-xs text-red-400 hover:text-red-300">Сбросить</button>
+             </div>
+             <textarea 
+               value={systemPrompt}
+               onChange={(e) => handlePromptChange(e.target.value)}
+               className="w-full h-40 bg-gray-950 text-gray-300 text-xs font-mono p-2 rounded border border-gray-800 focus:border-indigo-500 outline-none"
+             />
+          </div>
+        )}
         
         <div className="flex gap-4">
           <input

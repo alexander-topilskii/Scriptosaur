@@ -4,28 +4,40 @@ import { PROMPTS } from '../constants';
 import { Chat } from '@google/genai';
 
 interface StructureBuilderProps {
-  apiKey: string;
   model: string;
   bloggerStyle: string;
   onStructureConfirmed: (topic: string, structure: string, chat: Chat) => void;
 }
 
-const StructureBuilder: React.FC<StructureBuilderProps> = ({ apiKey, model, bloggerStyle, onStructureConfirmed }) => {
+const KEY_PERSONA = 'prompt_persona';
+const KEY_STRUCTURE = 'prompt_structure';
+
+const StructureBuilder: React.FC<StructureBuilderProps> = ({ model, bloggerStyle, onStructureConfirmed }) => {
   const [topic, setTopic] = useState('');
   const [structure, setStructure] = useState('');
   const [loading, setLoading] = useState(false);
   const [chat, setChat] = useState<Chat | null>(null);
 
+  // Prompt States
+  const [personaPrompt, setPersonaPrompt] = useState(() => localStorage.getItem(KEY_PERSONA) || PROMPTS.GENERATOR_PERSONA);
+  const [structureRequestPrompt, setStructureRequestPrompt] = useState(() => localStorage.getItem(KEY_STRUCTURE) || PROMPTS.STRUCTURE_REQUEST);
+  const [showPrompts, setShowPrompts] = useState(false);
+
+  const savePrompt = (key: string, val: string, setter: (v: string) => void) => {
+    setter(val);
+    localStorage.setItem(key, val);
+  };
+
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setLoading(true);
     try {
-      // Initialize the chat session with the Persona + Style
-      const newChat = createScriptChat(apiKey, model, bloggerStyle, topic, PROMPTS.GENERATOR_PERSONA);
+      // Initialize the chat session with the customized Persona + Style
+      const newChat = createScriptChat(model, bloggerStyle, topic, personaPrompt);
       setChat(newChat);
 
-      // Ask for structure
-      const result = await generateStructure(newChat, PROMPTS.STRUCTURE_REQUEST);
+      // Ask for structure using customized request
+      const result = await generateStructure(newChat, structureRequestPrompt);
       setStructure(result);
     } catch (error) {
       console.error(error);
@@ -38,10 +50,41 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({ apiKey, model, blog
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="bg-gray-850 p-6 rounded-lg border border-gray-700">
-        <h2 className="text-xl font-bold mb-4 text-white">2. Тема и Структура</h2>
-        <p className="text-gray-400 mb-4 text-sm">
-          О чем будет ваше видео? AI предложит поэпизодный план.
-        </p>
+        <div className="flex justify-between items-start mb-4">
+            <div>
+                <h2 className="text-xl font-bold text-white">2. Тема и Структура</h2>
+                <p className="text-gray-400 text-sm mt-1">
+                О чем будет ваше видео? AI предложит поэпизодный план.
+                </p>
+            </div>
+            <button 
+                onClick={() => setShowPrompts(!showPrompts)}
+                className="text-xs flex items-center gap-1 text-gray-500 hover:text-indigo-400 transition-colors"
+            >
+                {showPrompts ? 'Скрыть промпты' : '⚙️ Настроить промпты'}
+            </button>
+        </div>
+
+        {showPrompts && (
+            <div className="grid grid-cols-1 gap-4 mb-6">
+                 <div className="p-4 bg-gray-900 rounded border border-gray-700 border-l-4 border-l-purple-500">
+                    <label className="block text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Промт Роли (Persona)</label>
+                    <textarea 
+                        value={personaPrompt}
+                        onChange={(e) => savePrompt(KEY_PERSONA, e.target.value, setPersonaPrompt)}
+                        className="w-full h-32 bg-gray-950 text-gray-300 text-xs font-mono p-2 rounded border border-gray-800 focus:border-purple-500 outline-none"
+                    />
+                 </div>
+                 <div className="p-4 bg-gray-900 rounded border border-gray-700 border-l-4 border-l-indigo-500">
+                    <label className="block text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Промт Запроса Структуры</label>
+                    <textarea 
+                        value={structureRequestPrompt}
+                        onChange={(e) => savePrompt(KEY_STRUCTURE, e.target.value, setStructureRequestPrompt)}
+                        className="w-full h-24 bg-gray-950 text-gray-300 text-xs font-mono p-2 rounded border border-gray-800 focus:border-indigo-500 outline-none"
+                    />
+                 </div>
+            </div>
+        )}
         
         <div className="flex gap-4">
           <input

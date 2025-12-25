@@ -10,7 +10,6 @@ export enum AppStep {
 
 export interface AppState {
   step: AppStep;
-  apiKey: string;
   selectedModel: string;
   bloggerName: string;
   bloggerStyle: string;
@@ -21,7 +20,7 @@ export interface AppState {
 }
 
 export interface PostProcessOption {
-  id: 'cliche' | 'humor' | 'review';
+  id: 'cliche' | 'humor' | 'review' | 'free_edit';
   label: string;
   description: string;
   icon: string;

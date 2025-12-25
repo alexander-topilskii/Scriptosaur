@@ -5,12 +5,12 @@ const SAFETY_SETTINGS = [
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
 ];
 
-export const createClient = (apiKey: string) => {
-  return new GoogleGenAI({ apiKey });
+export const createClient = () => {
+  return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
-export const generateStyleAnalysis = async (apiKey: string, model: string, bloggerName: string, systemPrompt: string): Promise<string> => {
-  const ai = createClient(apiKey);
+export const generateStyleAnalysis = async (model: string, bloggerName: string, systemPrompt: string): Promise<string> => {
+  const ai = createClient();
   const response = await ai.models.generateContent({
     model: model,
     contents: `ВХОДНЫЕ ДАННЫЕ:
@@ -24,8 +24,8 @@ export const generateStyleAnalysis = async (apiKey: string, model: string, blogg
   return response.text || "Не удалось сгенерировать анализ стиля.";
 };
 
-export const createScriptChat = (apiKey: string, model: string, style: string, topic: string, personaPrompt: string): Chat => {
-  const ai = createClient(apiKey);
+export const createScriptChat = (model: string, style: string, topic: string, personaPrompt: string): Chat => {
+  const ai = createClient();
   const systemInstruction = personaPrompt
     .replace('{TOPIC}', topic)
     .replace('{STYLE}', style);
@@ -49,8 +49,8 @@ export const generateScriptSection = async (chat: Chat, instruction: string): Pr
   return response.text || "Не удалось сгенерировать часть сценария.";
 };
 
-export const reviewScript = async (apiKey: string, model: string, script: string, prompt: string): Promise<string> => {
-  const ai = createClient(apiKey);
+export const reviewScript = async (model: string, script: string, prompt: string): Promise<string> => {
+  const ai = createClient();
   const response = await ai.models.generateContent({
     model: model,
     contents: `Проанализируй следующий сценарий:\n\n${script}`,
@@ -62,8 +62,8 @@ export const reviewScript = async (apiKey: string, model: string, script: string
   return response.text || "Не удалось провести рецензию.";
 };
 
-export const detectCliches = async (apiKey: string, model: string, script: string, prompt: string): Promise<string> => {
-  const ai = createClient(apiKey);
+export const detectCliches = async (model: string, script: string, prompt: string): Promise<string> => {
+  const ai = createClient();
   const response = await ai.models.generateContent({
     model: model,
     contents: `Текст для анализа:\n${script}`,
@@ -75,8 +75,8 @@ export const detectCliches = async (apiKey: string, model: string, script: strin
   return response.text || "[]";
 };
 
-export const fixCliches = async (apiKey: string, model: string, script: string, instructions: string, prompt: string): Promise<string> => {
-  const ai = createClient(apiKey);
+export const fixCliches = async (model: string, script: string, instructions: string, prompt: string): Promise<string> => {
+  const ai = createClient();
   const response = await ai.models.generateContent({
     model: model,
     contents: `Оригинальный текст:\n${script}\n\nИнструкции по исправлению:\n${instructions}`,
@@ -87,8 +87,8 @@ export const fixCliches = async (apiKey: string, model: string, script: string, 
   return response.text || script;
 };
 
-export const applyHumor = async (apiKey: string, model: string, script: string, style: string, prompt: string): Promise<string> => {
-  const ai = createClient(apiKey);
+export const applyHumor = async (model: string, script: string, style: string, prompt: string): Promise<string> => {
+  const ai = createClient();
   const response = await ai.models.generateContent({
     model: model,
     contents: `Текст:\n${script}\n\nКонтекст стиля:\n${style}`,
@@ -98,3 +98,20 @@ export const applyHumor = async (apiKey: string, model: string, script: string, 
   });
   return response.text || script;
 };
+
+export const freeTextEdit = async (model: string, script: string, style: string, instruction: string): Promise<string> => {
+    const ai = createClient();
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: `ИСХОДНЫЙ ТЕКСТ:\n${script}\n\nЗАДАЧА ПО РЕДАКТИРОВАНИЮ:\n${instruction}`,
+      config: {
+        systemInstruction: `Ты — профессиональный редактор. Твоя задача — отредактировать текст согласно инструкции пользователя.
+        Стиль, которого нужно придерживаться (если инструкция не говорит об обратном):
+        ${style}
+        
+        Верни ТОЛЬКО отредактированный текст.`,
+        safetySettings: SAFETY_SETTINGS,
+      }
+    });
+    return response.text || script;
+  };
