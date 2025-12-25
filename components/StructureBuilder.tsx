@@ -5,11 +5,12 @@ import { Chat } from '@google/genai';
 
 interface StructureBuilderProps {
   apiKey: string;
+  model: string;
   bloggerStyle: string;
   onStructureConfirmed: (topic: string, structure: string, chat: Chat) => void;
 }
 
-const StructureBuilder: React.FC<StructureBuilderProps> = ({ apiKey, bloggerStyle, onStructureConfirmed }) => {
+const StructureBuilder: React.FC<StructureBuilderProps> = ({ apiKey, model, bloggerStyle, onStructureConfirmed }) => {
   const [topic, setTopic] = useState('');
   const [structure, setStructure] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({ apiKey, bloggerStyl
     setLoading(true);
     try {
       // Initialize the chat session with the Persona + Style
-      const newChat = createScriptChat(apiKey, bloggerStyle, topic, PROMPTS.GENERATOR_PERSONA);
+      const newChat = createScriptChat(apiKey, model, bloggerStyle, topic, PROMPTS.GENERATOR_PERSONA);
       setChat(newChat);
 
       // Ask for structure

@@ -9,10 +9,10 @@ export const createClient = (apiKey: string) => {
   return new GoogleGenAI({ apiKey });
 };
 
-export const generateStyleAnalysis = async (apiKey: string, bloggerName: string, systemPrompt: string): Promise<string> => {
+export const generateStyleAnalysis = async (apiKey: string, model: string, bloggerName: string, systemPrompt: string): Promise<string> => {
   const ai = createClient(apiKey);
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: model,
     contents: `ВХОДНЫЕ ДАННЫЕ:
 Имя человека / название канала: ${bloggerName}
 Язык: русский`,
@@ -24,14 +24,14 @@ export const generateStyleAnalysis = async (apiKey: string, bloggerName: string,
   return response.text || "Не удалось сгенерировать анализ стиля.";
 };
 
-export const createScriptChat = (apiKey: string, style: string, topic: string, personaPrompt: string): Chat => {
+export const createScriptChat = (apiKey: string, model: string, style: string, topic: string, personaPrompt: string): Chat => {
   const ai = createClient(apiKey);
   const systemInstruction = personaPrompt
     .replace('{TOPIC}', topic)
     .replace('{STYLE}', style);
     
   return ai.chats.create({
-    model: 'gemini-3-flash-preview',
+    model: model,
     config: {
       systemInstruction: systemInstruction,
       safetySettings: SAFETY_SETTINGS,
@@ -49,10 +49,10 @@ export const generateScriptSection = async (chat: Chat, instruction: string): Pr
   return response.text || "Не удалось сгенерировать часть сценария.";
 };
 
-export const reviewScript = async (apiKey: string, script: string, prompt: string): Promise<string> => {
+export const reviewScript = async (apiKey: string, model: string, script: string, prompt: string): Promise<string> => {
   const ai = createClient(apiKey);
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: model,
     contents: `Проанализируй следующий сценарий:\n\n${script}`,
     config: {
       systemInstruction: prompt,
@@ -62,10 +62,10 @@ export const reviewScript = async (apiKey: string, script: string, prompt: strin
   return response.text || "Не удалось провести рецензию.";
 };
 
-export const detectCliches = async (apiKey: string, script: string, prompt: string): Promise<string> => {
+export const detectCliches = async (apiKey: string, model: string, script: string, prompt: string): Promise<string> => {
   const ai = createClient(apiKey);
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: model,
     contents: `Текст для анализа:\n${script}`,
     config: {
       systemInstruction: prompt,
@@ -75,10 +75,10 @@ export const detectCliches = async (apiKey: string, script: string, prompt: stri
   return response.text || "[]";
 };
 
-export const fixCliches = async (apiKey: string, script: string, instructions: string, prompt: string): Promise<string> => {
+export const fixCliches = async (apiKey: string, model: string, script: string, instructions: string, prompt: string): Promise<string> => {
   const ai = createClient(apiKey);
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: model,
     contents: `Оригинальный текст:\n${script}\n\nИнструкции по исправлению:\n${instructions}`,
     config: {
       systemInstruction: prompt,
@@ -87,10 +87,10 @@ export const fixCliches = async (apiKey: string, script: string, instructions: s
   return response.text || script;
 };
 
-export const applyHumor = async (apiKey: string, script: string, style: string, prompt: string): Promise<string> => {
+export const applyHumor = async (apiKey: string, model: string, script: string, style: string, prompt: string): Promise<string> => {
   const ai = createClient(apiKey);
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: model,
     contents: `Текст:\n${script}\n\nКонтекст стиля:\n${style}`,
     config: {
       systemInstruction: prompt,

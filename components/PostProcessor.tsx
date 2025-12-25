@@ -5,12 +5,13 @@ import { ClicheItem, PostProcessOption } from '../types';
 
 interface PostProcessorProps {
   apiKey: string;
+  model: string;
   script: string;
   style: string;
   onUpdateScript: (newScript: string) => void;
 }
 
-const PostProcessor: React.FC<PostProcessorProps> = ({ apiKey, script, style, onUpdateScript }) => {
+const PostProcessor: React.FC<PostProcessorProps> = ({ apiKey, model, script, style, onUpdateScript }) => {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [reviewResult, setReviewResult] = useState<string>('');
@@ -46,7 +47,7 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ apiKey, script, style, on
   const runReview = async () => {
     setProcessing(true);
     try {
-        const result = await reviewScript(apiKey, currentScript, PROMPTS.REVIEW_SYSTEM);
+        const result = await reviewScript(apiKey, model, currentScript, PROMPTS.REVIEW_SYSTEM);
         setReviewResult(result);
     } catch (e) {
         alert('Ошибка рецензии');
@@ -58,7 +59,7 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ apiKey, script, style, on
   const runHumor = async () => {
     setProcessing(true);
     try {
-        const result = await applyHumor(apiKey, currentScript, style, PROMPTS.HUMOR_SYSTEM);
+        const result = await applyHumor(apiKey, model, currentScript, style, PROMPTS.HUMOR_SYSTEM);
         setCurrentScript(result);
         onUpdateScript(result);
         alert('Юмор добавлен!');
@@ -73,7 +74,7 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ apiKey, script, style, on
   const runClicheDetection = async () => {
     setProcessing(true);
     try {
-        const jsonStr = await detectCliches(apiKey, currentScript, PROMPTS.CLICHE_DETECTION_SYSTEM);
+        const jsonStr = await detectCliches(apiKey, model, currentScript, PROMPTS.CLICHE_DETECTION_SYSTEM);
         // Clean markdown code blocks if present
         const cleanJson = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
         const items = JSON.parse(cleanJson);
@@ -96,7 +97,7 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ apiKey, script, style, on
     const instructions = selected.map(c => `ID ${c.id}: ${c.text} -> Исправить (${c.suggestion})`).join('\n');
     
     try {
-        const fixed = await fixCliches(apiKey, currentScript, instructions, PROMPTS.CLICHE_FIX_SYSTEM);
+        const fixed = await fixCliches(apiKey, model, currentScript, instructions, PROMPTS.CLICHE_FIX_SYSTEM);
         setCurrentScript(fixed);
         onUpdateScript(fixed);
         setActiveTool(null);

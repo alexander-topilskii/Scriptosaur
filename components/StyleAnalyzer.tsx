@@ -4,10 +4,11 @@ import { PROMPTS } from '../constants';
 
 interface StyleAnalyzerProps {
   apiKey: string;
+  model: string;
   onStyleConfirmed: (name: string, style: string) => void;
 }
 
-const StyleAnalyzer: React.FC<StyleAnalyzerProps> = ({ apiKey, onStyleConfirmed }) => {
+const StyleAnalyzer: React.FC<StyleAnalyzerProps> = ({ apiKey, model, onStyleConfirmed }) => {
   const [name, setName] = useState('');
   const [analysis, setAnalysis] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ const StyleAnalyzer: React.FC<StyleAnalyzerProps> = ({ apiKey, onStyleConfirmed 
     if (!name.trim()) return;
     setLoading(true);
     try {
-      const result = await generateStyleAnalysis(apiKey, name, PROMPTS.STYLE_ANALYSIS_SYSTEM);
+      const result = await generateStyleAnalysis(apiKey, model, name, PROMPTS.STYLE_ANALYSIS_SYSTEM);
       setAnalysis(result);
     } catch (error) {
       console.error(error);

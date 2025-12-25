@@ -5,12 +5,18 @@ import StyleAnalyzer from './components/StyleAnalyzer';
 import StructureBuilder from './components/StructureBuilder';
 import ScriptGenerator from './components/ScriptGenerator';
 import PostProcessor from './components/PostProcessor';
-import { Chat } from '@google/genai';
+
+const MODELS = [
+  { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash (Recommended)' },
+  { value: 'gemini-3-pro-preview', label: 'Gemini 3 Pro (Complex Reasoning)' },
+  { value: 'gemini-2.5-flash-latest', label: 'Gemini 2.5 Flash (Fast)' },
+];
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
     step: AppStep.SETUP,
     apiKey: process.env.API_KEY || '',
+    selectedModel: 'gemini-3-flash-preview',
     bloggerName: '',
     bloggerStyle: '',
     topic: '',
@@ -19,25 +25,54 @@ const App: React.FC = () => {
     chatSession: null,
   });
 
-  useEffect(() => {
-    if (process.env.API_KEY) {
-      setState(prev => ({ 
-        ...prev, 
-        apiKey: process.env.API_KEY!, 
-        step: AppStep.STYLE_ANALYSIS 
-      }));
-    }
-  }, []);
+  const [inputKey, setInputKey] = useState(process.env.API_KEY || '');
 
   // Setup Step
   if (state.step === AppStep.SETUP) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-950">
-         <div className="max-w-md w-full bg-gray-850 p-8 rounded-lg border border-gray-700 shadow-2xl text-center">
-            <h1 className="text-3xl font-bold text-indigo-500 mb-6">ScriptGenius AI</h1>
-            <p className="text-gray-400 mb-6">
-              {process.env.API_KEY ? 'Loading...' : 'API Key not found in environment variables.'}
-            </p>
+         <div className="max-w-md w-full bg-gray-850 p-8 rounded-lg border border-gray-700 shadow-2xl">
+            <h1 className="text-3xl font-bold text-indigo-500 mb-6 text-center">ScriptGenius AI</h1>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Gemini API Key</label>
+                <input 
+                  type="password" 
+                  value={inputKey}
+                  onChange={(e) => setInputKey(e.target.value)}
+                  placeholder="Enter your API Key"
+                  className="w-full bg-gray-950 border border-gray-700 rounded-md p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Model</label>
+                <select 
+                  value={state.selectedModel}
+                  onChange={(e) => setState(prev => ({ ...prev, selectedModel: e.target.value }))}
+                  className="w-full bg-gray-950 border border-gray-700 rounded-md p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  {MODELS.map(m => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <button 
+                onClick={() => {
+                  if (inputKey) {
+                    setState(prev => ({ ...prev, apiKey: inputKey, step: AppStep.STYLE_ANALYSIS }));
+                  } else {
+                    alert('Please enter an API Key');
+                  }
+                }}
+                disabled={!inputKey}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 rounded transition-colors mt-6"
+              >
+                Начать (Start)
+              </button>
+            </div>
          </div>
       </div>
     );
@@ -53,9 +88,9 @@ const App: React.FC = () => {
               ScriptGenius AI
             </h1>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 flex items-center gap-4">
+            <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400">{state.selectedModel}</span>
             {state.bloggerName && <span className="mr-4">Автор: {state.bloggerName}</span>}
-            {state.topic && <span>Тема: {state.topic}</span>}
           </div>
         </div>
       </header>
@@ -66,6 +101,7 @@ const App: React.FC = () => {
         {state.step === AppStep.STYLE_ANALYSIS && (
           <StyleAnalyzer 
             apiKey={state.apiKey}
+            model={state.selectedModel}
             onStyleConfirmed={(name, style) => {
               setState(prev => ({ 
                 ...prev, 
@@ -80,6 +116,7 @@ const App: React.FC = () => {
         {state.step === AppStep.STRUCTURE && (
           <StructureBuilder 
             apiKey={state.apiKey}
+            model={state.selectedModel}
             bloggerStyle={state.bloggerStyle}
             onStructureConfirmed={(topic, structure, chat) => {
               setState(prev => ({
@@ -110,6 +147,7 @@ const App: React.FC = () => {
         {state.step === AppStep.POST_PROCESSING && (
           <PostProcessor 
             apiKey={state.apiKey}
+            model={state.selectedModel}
             script={state.generatedScript}
             style={state.bloggerStyle}
             onUpdateScript={(newScript) => {

@@ -11,6 +11,7 @@ export enum AppStep {
 export interface AppState {
   step: AppStep;
   apiKey: string;
+  selectedModel: string;
   bloggerName: string;
   bloggerStyle: string;
   topic: string;
