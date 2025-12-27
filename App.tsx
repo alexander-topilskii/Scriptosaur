@@ -28,8 +28,8 @@ const App: React.FC = () => {
   if (state.step === AppStep.SETUP) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-950">
-         <div className="max-w-md w-full bg-gray-850 p-8 rounded-lg border border-gray-700 shadow-2xl">
-            <h1 className="text-3xl font-bold text-indigo-500 mb-6 text-center">ScriptGenius AI</h1>
+         <div className="max-w-md w-full bg-gray-850 p-6 md:p-8 rounded-lg border border-gray-700 shadow-2xl">
+            <h1 className="text-3xl font-bold text-indigo-500 mb-6 text-center">Scriptosaur 🦕</h1>
             
             <div className="space-y-4">
               <div>
@@ -64,29 +64,29 @@ const App: React.FC = () => {
       <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">⚡</span>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              ScriptGenius AI
+            <span className="text-2xl">🦕</span>
+            <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent hidden xs:block">
+              Scriptosaur
             </h1>
           </div>
-          <div className="text-sm text-gray-500 flex items-center gap-4">
-             <div className="relative group">
+          <div className="text-sm text-gray-500 flex items-center gap-2 md:gap-4">
+             <div className="relative group max-w-[150px] md:max-w-none">
                 <select 
                   value={state.selectedModel}
                   onChange={(e) => setState(prev => ({ ...prev, selectedModel: e.target.value }))}
-                  className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1 outline-none focus:border-indigo-500 cursor-pointer"
+                  className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1 outline-none focus:border-indigo-500 cursor-pointer w-full"
                 >
                   {MODELS.map(m => (
                     <option key={m.value} value={m.value}>{m.label}</option>
                   ))}
                 </select>
              </div>
-            {state.bloggerName && <span className="mr-4 hidden sm:inline">Автор: {state.bloggerName}</span>}
+            {state.bloggerName && <span className="mr-4 hidden md:inline truncate max-w-[200px]">Автор: {state.bloggerName}</span>}
           </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full p-6">
+      <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6">
         <StepIndicator currentStep={state.step} />
 
         {state.step === AppStep.STYLE_ANALYSIS && (

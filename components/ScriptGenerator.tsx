@@ -53,9 +53,9 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, styl
   const fullScript = scriptParts.join('\n\n***\n\n');
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 animate-fade-in h-[calc(100vh-200px)]">
+    <div className="flex flex-col lg:flex-row gap-6 animate-fade-in h-auto lg:h-[calc(100vh-200px)]">
       {/* Left: Structure Reference */}
-      <div className="lg:w-1/3 bg-gray-850 p-4 rounded-lg border border-gray-700 flex flex-col">
+      <div className="w-full lg:w-1/3 bg-gray-850 p-4 rounded-lg border border-gray-700 flex flex-col h-[300px] lg:h-auto">
         <h3 className="text-md font-bold text-gray-300 mb-2">План Сценария</h3>
         <div className="flex-1 overflow-y-auto pr-2 text-sm text-gray-400 font-mono whitespace-pre-wrap">
           {structure}
@@ -63,8 +63,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, styl
       </div>
 
       {/* Right: Generation Area */}
-      <div className="lg:w-2/3 flex flex-col gap-4">
-        <div className="flex-1 bg-gray-850 p-4 rounded-lg border border-gray-700 flex flex-col overflow-hidden">
+      <div className="w-full lg:w-2/3 flex flex-col gap-4">
+        <div className="flex-1 bg-gray-850 p-4 rounded-lg border border-gray-700 flex flex-col overflow-hidden h-[500px] lg:h-auto">
           <div className="flex justify-between items-center mb-2">
              <h3 className="text-md font-bold text-indigo-300">Сценарий</h3>
              <button 
@@ -91,7 +91,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, styl
 
           <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {scriptParts.length === 0 && (
-              <div className="text-gray-500 italic text-center mt-20">
+              <div className="text-gray-500 italic text-center mt-10 md:mt-20 px-4">
                 Нажмите "Генерировать Блок", чтобы начать написание сценария по плану.
               </div>
             )}
@@ -111,11 +111,11 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, styl
 
         {/* Controls */}
         <div className="bg-gray-850 p-4 rounded-lg border border-gray-700 flex flex-col gap-3">
-            <div className="flex gap-2">
+            <div className="flex flex-col md:flex-row gap-2">
                 <input 
                     type="text" 
                     placeholder="Доп. инструкция для ЭТОГО блока (опционально)..."
-                    className="flex-1 bg-gray-950 border border-gray-700 rounded px-3 py-2 text-sm text-white"
+                    className="flex-1 bg-gray-950 border border-gray-700 rounded px-3 py-3 md:py-2 text-sm text-white"
                     value={customInstruction}
                     onChange={(e) => setCustomInstruction(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleGenerateNext()}
@@ -123,18 +123,18 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ chat, structure, styl
                  <button
                     onClick={handleGenerateNext}
                     disabled={loading}
-                    className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-2 rounded font-medium whitespace-nowrap"
+                    className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 md:py-2 rounded font-medium whitespace-nowrap"
                 >
                     {loading ? 'Пишу...' : 'Генерировать Блок'}
                 </button>
             </div>
             
-            <div className="border-t border-gray-700 pt-3 flex justify-between items-center">
-                <span className="text-xs text-gray-500">Генерируйте по частям для лучшего контроля.</span>
+            <div className="border-t border-gray-700 pt-3 flex flex-col md:flex-row justify-between items-center gap-2">
+                <span className="text-xs text-gray-500 text-center md:text-left">Генерируйте по частям для лучшего контроля.</span>
                 <button
                     onClick={() => onScriptComplete(fullScript)}
                     disabled={scriptParts.length === 0}
-                    className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-6 py-2 rounded font-medium"
+                    className="w-full md:w-auto bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-6 py-2 rounded font-medium"
                 >
                     Завершить и Обработать &rarr;
                 </button>

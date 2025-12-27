@@ -249,9 +249,9 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ model, script, style, onU
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 animate-fade-in h-[calc(100vh-200px)]">
+    <div className="flex flex-col lg:flex-row gap-6 animate-fade-in h-auto lg:h-[calc(100vh-200px)]">
       {/* Editor Column */}
-      <div className="flex-1 flex flex-col gap-4 min-w-0">
+      <div className="w-full lg:flex-1 flex flex-col gap-4 min-w-0 h-[500px] lg:h-auto">
         <div className="flex justify-between items-center bg-gray-850 p-2 rounded-t-lg border border-gray-700 border-b-0">
              <h3 className="text-gray-300 font-bold px-2">Финальный Текст (По блокам)</h3>
              <button 
@@ -262,7 +262,7 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ model, script, style, onU
              </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-10">
+        <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-10 bg-gray-900/50 rounded-lg p-2">
             {blocks.map((block, idx) => (
                 <div 
                     key={idx}
@@ -291,7 +291,7 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ model, script, style, onU
       </div>
 
       {/* Tools Column */}
-      <div className="lg:w-96 flex flex-col gap-4">
+      <div className="w-full lg:w-96 flex flex-col gap-4">
         {/* Tool Selection */}
         <div className="bg-gray-850 p-4 rounded-lg border border-gray-700">
             <h3 className="text-white font-bold mb-4">Инструменты</h3>
@@ -302,7 +302,7 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ model, script, style, onU
                     : `📄 Блок не выбран. Инструменты применятся ко всему тексту.`}
             </div>
 
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
                 {tools.map(tool => (
                     <button
                         key={tool.id}
@@ -325,7 +325,7 @@ const PostProcessor: React.FC<PostProcessorProps> = ({ model, script, style, onU
 
         {/* Active Tool Area */}
         {activeTool && (
-            <div className="bg-gray-850 p-4 rounded-lg border border-gray-700 flex-1 overflow-y-auto">
+            <div className="bg-gray-850 p-4 rounded-lg border border-gray-700 flex-1 overflow-y-auto h-[400px] lg:h-auto">
                 <div className="flex justify-between items-center mb-2">
                    <h4 className="text-sm font-bold text-indigo-300">Настройки</h4>
                    <button 
