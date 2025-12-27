@@ -13,6 +13,12 @@ const MODELS = [
 ];
 
 const App: React.FC = () => {
+  const [apiKey, setApiKey] = useState<string>(() => {
+    const cookies = document.cookie.split(';');
+    const apiKeyCookie = cookies.find(c => c.trim().startsWith('GEMINI_API_KEY='));
+    return apiKeyCookie ? apiKeyCookie.split('=')[1] : '';
+  });
+
   const [state, setState] = useState<AppState>({
     step: AppStep.SETUP,
     selectedModel: 'gemini-3-flash-preview',
@@ -24,17 +30,40 @@ const App: React.FC = () => {
     chatSession: null,
   });
 
+  const saveApiKey = (key: string) => {
+    document.cookie = `GEMINI_API_KEY=${key}; path=/; max-age=31536000; SameSite=Strict`;
+    setApiKey(key);
+  };
+
   // Setup Step
   if (state.step === AppStep.SETUP) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-950">
          <div className="max-w-md w-full bg-gray-850 p-6 md:p-8 rounded-lg border border-gray-700 shadow-2xl">
             <h1 className="text-3xl font-bold text-indigo-500 mb-6 text-center">Scriptosaur 🦕</h1>
-            
+
             <div className="space-y-4">
+              {!apiKey && (
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Gemini API Key</label>
+                  <input
+                    type="password"
+                    placeholder="Введите ваш API ключ"
+                    onChange={(e) => saveApiKey(e.target.value)}
+                    className="w-full bg-gray-950 border border-gray-700 rounded-md p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Получите ключ на{' '}
+                    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline">
+                      aistudio.google.com
+                    </a>
+                  </p>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Model</label>
-                <select 
+                <select
                   value={state.selectedModel}
                   onChange={(e) => setState(prev => ({ ...prev, selectedModel: e.target.value }))}
                   className="w-full bg-gray-950 border border-gray-700 rounded-md p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -45,11 +74,12 @@ const App: React.FC = () => {
                 </select>
               </div>
 
-              <button 
+              <button
                 onClick={() => {
                   setState(prev => ({ ...prev, step: AppStep.STYLE_ANALYSIS }));
                 }}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded transition-colors mt-6"
+                disabled={!apiKey}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded transition-colors mt-6 disabled:bg-gray-700 disabled:cursor-not-allowed"
               >
                 Начать (Start)
               </button>

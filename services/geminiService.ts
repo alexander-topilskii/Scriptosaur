@@ -5,8 +5,14 @@ const SAFETY_SETTINGS = [
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
 ];
 
+const getApiKey = (): string => {
+  const cookies = document.cookie.split(';');
+  const apiKeyCookie = cookies.find(c => c.trim().startsWith('GEMINI_API_KEY='));
+  return apiKeyCookie ? apiKeyCookie.split('=')[1] : (process.env.API_KEY || '');
+};
+
 export const createClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  return new GoogleGenAI({ apiKey: getApiKey() });
 };
 
 export const generateStyleAnalysis = async (model: string, bloggerName: string, systemPrompt: string): Promise<string> => {
