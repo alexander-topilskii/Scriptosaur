@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppState, AppStep } from './types';
 import StepIndicator from './components/StepIndicator';
 import StyleAnalyzer from './components/StyleAnalyzer';
